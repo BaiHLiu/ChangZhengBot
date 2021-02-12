@@ -3,7 +3,7 @@ Descripttion:
 version: 
 Author: Catop
 Date: 2021-02-10 07:47:09
-LastEditTime: 2021-02-12 17:49:38
+LastEditTime: 2021-02-12 18:46:00
 '''
 #coding:utf-8
 
@@ -28,12 +28,10 @@ def getEvent():
         message_type = data.get('message_type')
         #print(data)
         message = data.get('message')
-        user_id = data.get('user_id')
-        user_id = str(user_id)
-        print(f"--------------------\n接收消息@{user_id}：{message[:20]}")
-
-        if(post_type=='message' and message_type=='private'):
-            #print(f"user_id:{user_id} message:{message}")
+        user_id = str(data.get('user_id'))
+        if(message_type=='private' and len(dbconn.get_user(user_id).keys())>=2):
+            #仅接收注册用户的消息
+            print(f"--------------------\n接收消息@{user_id}：{message[:20]}")
             readMsg(user_id,message)
             
     return data
@@ -167,17 +165,20 @@ def send_alert(group_id,user_class,type='private'):
     
     #print(alert_users)
     msg = f"今天还有{len(alert_users)}位小可爱未完成哦\n"
-    for user_id in alert_users.keys():
-        last_date = alert_users[user_id]
-        msg += f"[CQ:at,qq={user_id}]({alert_users[user_id]})\n"
-    msg+=f"{user_class} {current_date} {len(group_menbers)-len(alert_users)}/{len(group_menbers)}"
+
 
     if(type=='private'):
+        for user_id in alert_users.keys():
+            last_date = alert_users[user_id]
+            msg += f"{dbconn.get_user(user_id)['user_name']}({alert_users[user_id]})\n"
+        msg+=f"{user_class} {current_date}\n完成情况:{len(group_menbers)-len(alert_users)}/{len(group_menbers)}"
         goapi.sendMsg(group_id,msg)
     elif(type=='group'):
+        for user_id in alert_users.keys():
+            last_date = alert_users[user_id]
+            msg += f"[CQ:at,qq={user_id}]({alert_users[user_id]})\n"
+        msg += f"{user_class} {current_date}\n完成情况:{len(group_menbers)-len(alert_users)}/{len(group_menbers)}"
         goapi.sendGroupMsg(group_id,msg)
-
-
     
 
 
