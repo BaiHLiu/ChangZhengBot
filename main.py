@@ -3,7 +3,7 @@ Descripttion:
 version: 
 Author: Catop
 Date: 2021-02-10 07:47:09
-LastEditTime: 2021-02-12 21:57:51
+LastEditTime: 2021-02-12 23:15:54
 '''
 #coding:utf-8
 
@@ -17,6 +17,7 @@ import os
 import compress
 import urllib.parse
 import random
+import ocrplus
 
 
 
@@ -132,7 +133,6 @@ def get_img(user_id,message):
         if(dbconn.check_today_upload(user_id,upload_date)):
             goapi.sendMsg(user_id,'您今天已经上传过照片啦，已覆盖之前的图片~')
         
-        dbconn.insert_img(user_id,file_name,upload_date,upload_time)
         download_img(img_url,file_name)
         #print(img_url)
     except Exception as err:
@@ -140,7 +140,28 @@ def get_img(user_id,message):
         print(err)
     else:
         print("成功处理图片:"+file_name)
-        goapi.sendMsg(user_id,"成功处理图片:"+file_name+" 祝生活愉快~")
+        goapi.sendMsg(user_id,"成功处理图片，正在识别...\n"+file_name)
+
+        """图片识别部分"""
+        try:
+            ocr_ret = ocrplus.ocr_img("images"+file_name)
+            ocr_err_code = ocr_ret['err_code']
+            if(ocr_err_code == 0):
+                goapi.sendMsg(user_id,f"参赛次数:{ocr_ret['个人参赛次数']}\n个人积分:{ocr_ret['个人积分']}")
+                ocr_times = ocr_ret['个人参赛次数']
+                ocr_scores = ocr_ret['个人积分']
+            else:
+                #图片识别接口返回无法识别
+                goapi.sendMsg(user_id,f"识别出错,请不要发送原图~问题不大，团支书将人工复核")
+                dbconn.insert_img(user_id,file_name,upload_date,upload_time,'1','0','0')
+                return 
+        except:
+            #图片识别接口出错
+            goapi.sendMsg(user_id,f"识别出错,请不要发送原图~问题不大，团支书将人工复核")
+            dbconn.insert_img(user_id,file_name,upload_date,upload_time,'1','0','0')
+        else:
+            dbconn.insert_img(user_id,file_name,upload_date,upload_time,ocr_err_code,ocr_times,ocr_scores)
+
     return 
 
 

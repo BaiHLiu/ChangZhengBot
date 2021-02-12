@@ -3,7 +3,7 @@ Descripttion:
 version: 
 Author: Catop
 Date: 2021-02-10 09:10:27
-LastEditTime: 2021-02-12 21:40:51
+LastEditTime: 2021-02-12 23:17:55
 '''
 #coding:utf-8
 import pymysql
@@ -39,10 +39,10 @@ def check_register(user_id):
     else:
         return 0
 
-def insert_img(user_id,file_name,upload_date,upload_time):
-    params = [file_name,user_id,upload_date,upload_time]
+def insert_img(user_id,file_name,upload_date,upload_time,ocr_err_code,ocr_times,ocr_scores):
+    params = [file_name,user_id,upload_date,upload_time,ocr_err_code,ocr_times,ocr_scores]
     cursor = conn.cursor(cursor=pymysql.cursors.DictCursor)
-    sql = f"INSERT INTO imginfo(file_name,user_id,upload_date,upload_time) VALUES(%s,%s,%s,%s)"
+    sql = f"INSERT INTO imginfo(file_name,user_id,upload_date,upload_time,ocr_err_code,ocr_times,ocr_scores) VALUES(%s,%s,%s,%s,%s,%s,%s)"
     conn.ping(reconnect=True)
     cursor.execute(sql,params)
     conn.commit()
