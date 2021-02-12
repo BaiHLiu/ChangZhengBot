@@ -3,7 +3,7 @@ Descripttion:
 version: 
 Author: Catop
 Date: 2021-02-10 20:05:50
-LastEditTime: 2021-02-10 20:17:16
+LastEditTime: 2021-02-10 21:53:07
 '''
 
 import os
@@ -24,13 +24,17 @@ def zip_file(upload_date,user_class):
             fpath = dirpath.replace(src_dir,'')
             fpath = fpath and fpath + os.sep or ''
             for filename in filenames:
+                #print(len(filenames))
                 z.write(os.path.join(dirpath, filename),fpath+filename)
                 print ('==压缩成功==')
         z.close()
     except:
         return 0
     else:
-        return zip_name
+        ret = {}
+        ret['file_num'] = str(len(filenames))
+        ret['file_name'] = f"{upload_date}_{user_class}_{zip_time}.zip"
+        return ret
 
 if __name__ == '__main__':
     print(zip_file('2021-02-10','信安20-2'))

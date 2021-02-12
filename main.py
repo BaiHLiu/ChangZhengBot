@@ -3,7 +3,7 @@ Descripttion:
 version: 
 Author: Catop
 Date: 2021-02-10 07:47:09
-LastEditTime: 2021-02-10 21:23:23
+LastEditTime: 2021-02-10 22:02:01
 '''
 #coding:utf-8
 
@@ -28,6 +28,7 @@ def getEvent():
     #print(data)
     message = data.get('message')
     user_id = data.get('user_id')
+    user_id = str(user_id)
     print(f"--------------------\n接收消息@{user_id}：{message[:20]}")
 
     if(post_type=='message' and message_type=='private'):
@@ -40,8 +41,12 @@ def readMsg(user_id,message):
     #处理消息核心
     user_id = str(user_id)
     admin_list = {
-        '601179193':'1038368144',
-        '29242764':'1038368144'
+        '601179193':'949773437',
+        '29242764':'1038368144',
+        '1251248524':'949773437',
+        '2766104656':'515192555',
+        '20475417':'515192555'
+        
         }  #管理用户列表
     
     if('image' in message):
@@ -76,7 +81,8 @@ def readMsg(user_id,message):
             elif('打包'in message):
                 upload_date = time.strftime("%Y-%m-%d", time.localtime()) 
                 cmp_ret = compress.zip_file(upload_date,dbconn.get_user(user_id)['user_class'])
-                goapi.sendMsg(user_id,'http://static.catop.top:8001/'+urllib.parse.quote(cmp_ret))
+                goapi.sendMsg(user_id,f"---打包完毕---\n共处理:{cmp_ret['file_num']}张照片")
+                goapi.sendMsg(user_id,'下载地址:http://static.catop.top:8001/'+urllib.parse.quote(cmp_ret['file_name']))
             else:
                 goapi.sendMsg(user_id,"管理指令有误")
         else:
@@ -154,15 +160,15 @@ def send_alert(group_id,user_class,type='private'):
             #还没发过照片
             alert_users[user_id] = '无记录'
         else:
-            if(last_date!=current_date):
+            if(str(last_date)!=str(current_date)):
                 alert_users[user_id] = str(last_date)[5:]
     
     #print(alert_users)
-    msg = f"---今天还有{len(alert_users)}位小可爱未完成哦--\n"
+    msg = f"今天还有{len(alert_users)}位小可爱未完成哦\n"
     for user_id in alert_users.keys():
         last_date = alert_users[user_id]
         msg += f"[CQ:at,qq={user_id}]({alert_users[user_id]})\n"
-
+    msg+=f"{user_class} {current_date} {len(group_menbers)-len(alert_users)}/{len(group_menbers)}"
 
     if(type=='private'):
         goapi.sendMsg(group_id,msg)
@@ -174,5 +180,5 @@ def send_alert(group_id,user_class,type='private'):
 
 
 if __name__ == '__main__':
-    app.run(host='127.0.0.1',port='5000',debug=True)
+    app.run(host='127.0.0.1',port='5000',debug=False)
     #send_alert('1038368144','信安20-2','group')
