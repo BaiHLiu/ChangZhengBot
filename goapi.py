@@ -3,7 +3,7 @@ Descripttion:
 version: 
 Author: Catop
 Date: 2021-02-10 09:38:39
-LastEditTime: 2021-02-10 20:37:44
+LastEditTime: 2021-02-12 21:55:09
 '''
 #coding:utf-8
 import requests
@@ -33,6 +33,12 @@ def uploadGroupFile(group_id,file_dir,file_name):
     print(f"--------------------\n上传群文件@{group_id}：{file}")
     return res.text
 
+def add_request(request_flag):
+    url = 'http://127.0.0.1:5800/set_friend_add_request'
+    data = {'flag':str(request_flag)}
+    res = requests.get(url,params=data)
+    print("加好友成功")
+    return res.text
 
 
 if __name__=='__main__':
