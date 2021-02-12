@@ -3,7 +3,7 @@ Descripttion:
 version: 
 Author: Catop
 Date: 2021-02-10 09:10:27
-LastEditTime: 2021-02-10 17:08:12
+LastEditTime: 2021-02-12 21:40:51
 '''
 #coding:utf-8
 import pymysql
@@ -34,7 +34,7 @@ def check_register(user_id):
     user_info = cursor.fetchall()
     conn.commit()
 
-    if(len(user_info)==1):
+    if(len(user_info)>=1):
         return 1
     else:
         return 0
@@ -134,7 +134,7 @@ def get_class_members(user_class):
     conn.commit()
     class_menbers = []
 
-    for i in range(0,len(sql_ret)-1):
+    for i in range(0,len(sql_ret)):
         class_menbers.append(sql_ret[i]['user_id'])
     return class_menbers
 
@@ -148,4 +148,3 @@ if __name__=='__main__':
     #print(register_user('29242764','李四','信安20-1'))
     print(check_status(601179193))
     print(get_class_members('信安20-2'))
-    
