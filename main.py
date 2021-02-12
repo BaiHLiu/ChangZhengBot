@@ -3,7 +3,7 @@ Descripttion:
 version: 
 Author: Catop
 Date: 2021-02-10 07:47:09
-LastEditTime: 2021-02-12 18:46:00
+LastEditTime: 2021-02-12 21:43:26
 '''
 #coding:utf-8
 
@@ -29,8 +29,8 @@ def getEvent():
         #print(data)
         message = data.get('message')
         user_id = str(data.get('user_id'))
-        if(message_type=='private' and len(dbconn.get_user(user_id).keys())>=2):
-            #仅接收注册用户的消息
+        if(message_type=='private' and (dbconn.check_register(user_id)==1 or '注册' in message)):
+            #仅接收注册用户的消息和注册消息
             print(f"--------------------\n接收消息@{user_id}：{message[:20]}")
             readMsg(user_id,message)
             
@@ -83,13 +83,17 @@ def readMsg(user_id,message):
                 cmp_ret = compress.zip_file(upload_date,dbconn.get_user(user_id)['user_class'])
                 goapi.sendMsg(user_id,f"---打包完毕---\n共处理:{cmp_ret['file_num']}张照片")
                 goapi.sendMsg(user_id,'下载地址:http://static.catop.top:8001/'+urllib.parse.quote(cmp_ret['file_name']))
+            elif('成员'in message):
+                user_class = dbconn.get_user(user_id)['user_class']
+                list_class_menbers(user_id,user_class)
             else:
-                goapi.sendMsg(user_id,"管理指令有误")
+                goapi.sendMsg(user_id,"目前支持以下管理指令呢：\n群提醒")
         else:
             
             goapi.sendMsg(user_id,"无管理权限")
         
         return 
+
 
                 
         
@@ -179,6 +183,15 @@ def send_alert(group_id,user_class,type='private'):
             msg += f"[CQ:at,qq={user_id}]({alert_users[user_id]})\n"
         msg += f"{user_class} {current_date}\n完成情况:{len(group_menbers)-len(alert_users)}/{len(group_menbers)}"
         goapi.sendGroupMsg(group_id,msg)
+    
+def list_class_menbers(user_id,user_class):
+    msg = f"{user_class}成员情况：\n"
+    ret = dbconn.get_class_members(user_class)
+    for i in range(0,len(ret)):
+        msg += f"{ret[i]} {dbconn.get_user(str(ret[i]))['user_name']}\n"
+    msg += f"共计{str(len(ret))}人"
+
+    goapi.sendMsg(user_id,msg)
     
 
 
