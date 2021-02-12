@@ -1,4 +1,4 @@
-go-cq/
-compressed/
-images/
-__pycache__
+go-cq/*
+compressed/*
+images/*
+__pycache__/
