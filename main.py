@@ -3,7 +3,7 @@ Descripttion:
 version: 
 Author: Catop
 Date: 2021-02-10 07:47:09
-LastEditTime: 2021-02-12 21:43:26
+LastEditTime: 2021-02-12 21:57:51
 '''
 #coding:utf-8
 
@@ -16,6 +16,7 @@ import time
 import os
 import compress
 import urllib.parse
+import random
 
 
 
@@ -31,9 +32,21 @@ def getEvent():
         user_id = str(data.get('user_id'))
         if(message_type=='private' and (dbconn.check_register(user_id)==1 or '注册' in message)):
             #仅接收注册用户的消息和注册消息
-            print(f"--------------------\n接收消息@{user_id}：{message[:20]}")
+            print(f"--------------------\n接收消息@{user_id}:{message[:20]}")
             readMsg(user_id,message)
-            
+    elif(post_type == 'request'):
+        request_type = data.get('request_type')
+        if(request_type=='friend'):
+            user_id = str(data.get('user_id'))
+            comment = str(data.get('comment'))
+            flag = str(data.get('flag'))
+            print(f"--------------------\n接收加好友请求@{user_id}:{comment[:20]}")
+            time.sleep(random.randint(5,10))
+            goapi.add_request(flag)
+            time.sleep(random.randint(5,10))
+            goapi.sendMsg(user_id,"欢迎！\n请先注册，例如'注册@张三@信安20-2'\n 班级请严格按格式输入，否则可能统计不上哦")
+
+
     return data
 
 
@@ -55,7 +68,7 @@ def readMsg(user_id,message):
             get_img(user_id,message)
         else:
             #用户未注册
-            goapi.sendMsg(user_id,'您还没注册呢，请输入例如"注册@张三@信安20-2"  班级请严格按格式输入，否则可能统计不上哦')
+            goapi.sendMsg(user_id,'您还没注册呢，请输入例如"注册@张三@信安20-2"\n 班级请严格按格式输入，否则可能统计不上哦')
         return 
     if('注册' in message):
         try:
@@ -87,7 +100,7 @@ def readMsg(user_id,message):
                 user_class = dbconn.get_user(user_id)['user_class']
                 list_class_menbers(user_id,user_class)
             else:
-                goapi.sendMsg(user_id,"目前支持以下管理指令呢：\n群提醒")
+                goapi.sendMsg(user_id,"目前支持以下管理指令呢：\n群提醒\n提醒\n打包\n成员")
         else:
             
             goapi.sendMsg(user_id,"无管理权限")
@@ -95,7 +108,6 @@ def readMsg(user_id,message):
         return 
 
 
-                
         
             
 def get_img(user_id,message):
