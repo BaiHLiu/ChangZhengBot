@@ -3,7 +3,7 @@ Descripttion:
 version: 
 Author: Catop
 Date: 2021-02-10 07:47:09
-LastEditTime: 2021-02-10 22:02:01
+LastEditTime: 2021-02-12 17:49:38
 '''
 #coding:utf-8
 
@@ -24,18 +24,20 @@ app = Flask(__name__)
 def getEvent():
     data = request.json
     post_type = data.get('post_type')
-    message_type = data.get('message_type')
-    #print(data)
-    message = data.get('message')
-    user_id = data.get('user_id')
-    user_id = str(user_id)
-    print(f"--------------------\n接收消息@{user_id}：{message[:20]}")
+    if(post_type == 'message'):
+        message_type = data.get('message_type')
+        #print(data)
+        message = data.get('message')
+        user_id = data.get('user_id')
+        user_id = str(user_id)
+        print(f"--------------------\n接收消息@{user_id}：{message[:20]}")
 
-    if(post_type=='message' and message_type=='private'):
-        #print(f"user_id:{user_id} message:{message}")
-        readMsg(user_id,message)
-        
+        if(post_type=='message' and message_type=='private'):
+            #print(f"user_id:{user_id} message:{message}")
+            readMsg(user_id,message)
+            
     return data
+
 
 def readMsg(user_id,message):
     #处理消息核心
@@ -180,5 +182,5 @@ def send_alert(group_id,user_class,type='private'):
 
 
 if __name__ == '__main__':
-    app.run(host='127.0.0.1',port='5000',debug=False)
+    app.run(host='127.0.0.1',port='5000',debug=True)
     #send_alert('1038368144','信安20-2','group')
