@@ -1,10 +1,3 @@
-'''
-Descripttion: 调用百度API识别分数和参赛次数
-version: 
-Author: Catop
-Date: 2021-02-12 22:18:31
-LastEditTime: 2021-02-12 22:48:25
-'''
 from os.path import expanduser
 from aip import AipOcr
 import os
@@ -19,14 +12,14 @@ def ocr_img(imgname,debug=0):
     API_KEY = "hGU9Z8eM8TIiNxf4YTPV8kao"
     SECRET_KEY = "cAX3DqAlU05spmoWq4Q4IFmK1YxFTR4C"
     ###############################################
-
-
     def get_file_content(filePath):
         with open(filePath, 'rb') as fp:
             return fp.read()
     #name="17.jpg"
     image = get_file_content(imgname)
-
+    #APP_ID = "23658549"
+    #API_KEY = "hGU9Z8eM8TIiNxf4YTPV8kao"
+    #SECRET_KEY = "cAX3DqAlU05spmoWq4Q4IFmK1YxFTR4C"
     client = AipOcr(APP_ID,API_KEY,SECRET_KEY)
     options={}
     text=client.general(image)
@@ -45,10 +38,13 @@ def ocr_img(imgname,debug=0):
         mark=res.find("top")
         mark1=res.find("left")
         mark2=res.find("width")
-        x=int(res[mark1+5:mark2])-150
-        y=int(res[mark+4:mark1])+33
-        w=433
-        h=99
+        mark3=res.find("height")
+        h=int(res[mark3+7:])*3
+        w=int(res[mark2+6:mark3])*3
+        x=int(res[mark1+5:mark2])-w/3
+        y=int(res[mark+4:mark1])+(h/3)
+        #w=433
+        #h=99
     except NameError:
         for i in range(0,lens):
             strr=str(listt[i]).replace("{","").replace("}","")
@@ -62,14 +58,15 @@ def ocr_img(imgname,debug=0):
         mark=res.find("top")
         mark1=res.find("left")
         mark2=res.find("width")
-        x=int(res[mark1+5:mark2])-150-458
-        y=int(res[mark+4:mark1])+33
-        w=433
-        h=99
+        mark3=res.find("height")
+        h=int(res[mark3+7:])*3
+        w=int(res[mark2+6:mark3])*3
+        x=int(res[mark1+5:mark2])-w/3
+        y=int(res[mark+4:mark1])+(h/3)
     im=Image.open(imgname)
     region=im.crop((x,y,x+w,y+h))
     region.save("./res1.png")
-    region1=im.crop((x+433,y,x+433+w,y+h))
+    region1=im.crop((x+w,y,x+w+w,y+h))
     region1.save("./res2.png")
     import pytesseract
     img=get_file_content('res1.png')
@@ -86,7 +83,6 @@ def ocr_img(imgname,debug=0):
     try:
         strr2=str(listt2[0]).replace("'words':","").replace("{","").replace("}","").replace(" ","").replace("'","")
         strr3=str(listt3[0]).replace("'words':","").replace("{","").replace("}","").replace(" ","").replace("'","")
-        
         num=int(strr2)
         score=int(strr3)
         res={}
@@ -109,11 +105,11 @@ def ocr_img(imgname,debug=0):
         res['err_code']=1
         res['个人参赛次数']="error"
         res['个人积分']="error"
-        
-        
         return res
-
-
-
-if __name__ == '__main__':
-    print(ocr_img('./dir1/4.jpg'))
+    except ValueError:
+        res={}
+        res['err_code']=1
+        res['个人参赛次数']="error"
+        res['个人积分']="error"
+        res['reason']="可能是字体原因"
+        return res
