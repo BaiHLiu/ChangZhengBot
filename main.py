@@ -98,6 +98,7 @@ def readMsg(user_id,message):
                 time.sleep(1)
                 #ocr_err_upload(user_id,user_class,upload_date)
                 ocr_err_upload(user_id,user_class,upload_date)
+                time.sleep(2)
                 send_images_info(user_id,user_class)
             elif('打包'in message):
                 cmp_ret = compress.zip_file(upload_date,dbconn.get_user(user_id)['user_class'])
@@ -265,9 +266,9 @@ def send_images_info(user_id,user_class):
             today_upload_count += 1
             img_info = dbconn.get_latest_img_info(class_menbers[i],upload_date)[0]
             if(img_info['ocr_err_code'] == 0):
-                msg += f"{dbconn.get_user(class_menbers[i])['user_name']} 次数{img_info['ocr_times']} 分数{img_info['ocr_scores']}\n"
+                msg += f"·{dbconn.get_user(class_menbers[i])['user_name']} 次数{img_info['ocr_times']} 分数{img_info['ocr_scores']}\n"
             else:
-                msg += f"{dbconn.get_user(class_menbers[i])['user_name']} 未识别到\n"
+                msg += f"·{dbconn.get_user(class_menbers[i])['user_name']} 未识别到\n"
     
     msg += f"共计{today_upload_count}张照片"
 
@@ -277,7 +278,7 @@ def send_images_info(user_id,user_class):
 
 
 if __name__ == '__main__':
-    app.run(host='127.0.0.1',port='5000',debug=True)
+    app.run(host='127.0.0.1',port='5000',debug=False)
     #send_alert('1038368144','信安20-2','group')
     #goapi.sendMsg('29242764','[CQ:image,file=file:/Users/catop/Desktop/ChangZhengBot/go-cq/res1.png]')
     #print(ocr_err_upload('29242764','信安20-2','2021-02-13'))
