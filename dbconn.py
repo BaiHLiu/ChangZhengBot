@@ -3,7 +3,7 @@ Descripttion:
 version: 
 Author: Catop
 Date: 2021-02-10 09:10:27
-LastEditTime: 2021-02-13 10:43:37
+LastEditTime: 2021-02-14 10:25:14
 '''
 #coding:utf-8
 import pymysql
@@ -139,10 +139,11 @@ def get_class_members(user_class):
     return class_menbers
 
 
-def get_ocr_err(user_class,upload_date):
+def get_latest_img_info(user_id,upload_date):
+    """获取指定用户指定时间最新照片信息"""
     cursor = conn.cursor(cursor=pymysql.cursors.DictCursor)
-    params = [user_class,upload_date]
-    sql = f"SELECT imginfo.file_name,imginfo.user_id,userinfo.user_name FROM imginfo,userinfo WHERE (userinfo.user_class=%s AND imginfo.upload_date=%s AND imginfo.ocr_err_code=1 AND imginfo.user_id=userinfo.user_id)"
+    params = [user_id,upload_date]
+    sql = f"SELECT * FROM imginfo WHERE (user_id=%s AND upload_date=%s) ORDER BY imgid DESC LIMIT 1"
     conn.ping(reconnect=True)
     cursor.execute(sql,params)
     sql_ret = cursor.fetchall()
@@ -150,16 +151,10 @@ def get_ocr_err(user_class,upload_date):
 
     return sql_ret
 
-def get_img_info(file_name):
-    cursor = conn.cursor(cursor=pymysql.cursors.DictCursor)
-    params = [file_name]
-    sql = f"SELECT * FROM imginfo WHERE file_name=%s ORDER BY imgid DESC LIMIT 1"
-    conn.ping(reconnect=True)
-    cursor.execute(sql,params)
-    sql_ret = cursor.fetchall()
-    conn.commit()
 
-    return sql_ret
+
+
+
 
 
 if __name__=='__main__':
@@ -169,5 +164,5 @@ if __name__=='__main__':
     #print(register_user('29242764','李四','信安20-1'))
     #print(check_status(601179193))
     #print(get_class_members('信安20-2'))
-    #print(get_ocr_err('信安20-2','2021-02-12'))
-    print(get_img_info('/2021-02-13/信安20-2/信安20-2班-刘佰航-20210213.jpg'))
+    print(get_latest_img_info('601179193','2021-02-13'))
+    

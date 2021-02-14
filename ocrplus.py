@@ -113,3 +113,6 @@ def ocr_img(imgname,debug=0):
         res['个人积分']="error"
         res['reason']="可能是字体原因"
         return res
+
+if __name__ == '__main__':
+    print(ocr_img('images/2021-02-13/信安20-2/信安20-2班-薛丰-20210213.jpg'))

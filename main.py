@@ -3,7 +3,7 @@ Descripttion:
 version: 
 Author: Catop
 Date: 2021-02-10 07:47:09
-LastEditTime: 2021-02-13 21:30:54
+LastEditTime: 2021-02-14 10:57:26
 '''
 #coding:utf-8
 
@@ -97,16 +97,16 @@ def readMsg(user_id,message):
                 upload_date = time.strftime("%Y-%m-%d", time.localtime()) 
                 time.sleep(1)
                 #ocr_err_upload(user_id,user_class,upload_date)
-                ocr_err_upload(user_id,user_class,'2021-02-12')
-            elif('打包'in message):
                 ocr_err_upload(user_id,user_class,upload_date)
+                send_images_info(user_id,user_class)
+            elif('打包'in message):
                 cmp_ret = compress.zip_file(upload_date,dbconn.get_user(user_id)['user_class'])
                 goapi.sendMsg(user_id,f"---打包完毕---\n共处理:{cmp_ret['file_num']}张照片")
                 goapi.sendMsg(user_id,'下载地址:http://static.catop.top:8001/'+urllib.parse.quote(cmp_ret['file_name']))
             elif('成员'in message):
                 list_class_menbers(user_id,user_class)
             else:
-                goapi.sendMsg(user_id,"目前支持以下管理指令呢：\n群提醒\n提醒\n打包\n成员")
+                goapi.sendMsg(user_id,"目前支持以下管理指令呢：\n群提醒\n提醒\n打包\n成员\n")
         else:
             
             goapi.sendMsg(user_id,"无管理权限")
@@ -235,17 +235,44 @@ def list_class_menbers(user_id,user_class):
 def ocr_err_upload(user_id,user_class,upload_date):
     """为管理员上报ocr错误的图片"""
     msg = "OCR无法识别以下图片:\n"
-    err_list = dbconn.get_ocr_err(user_class,upload_date)
-    group_menbers = dbconn.get_class_members(user_class)
+    err_list = []
+    class_menbers = dbconn.get_class_members(user_class)
+    for i in range(0,len(class_menbers)):
+        img_date = dbconn.check_status(class_menbers[i])
+        if(str(img_date) == str(upload_date)):
+            img_info = dbconn.get_latest_img_info(class_menbers[i],upload_date)[0]
+            #print(img_info)
+            if(img_info['ocr_err_code'] == 1):
+                print(img_info)
+                err_list.append(img_info['file_name'])
+
     for i in range(0,len(err_list)):
-        cqCode = f"[CQ:image,file=file:{os.getcwd()}/images{err_list[i]['file_name']}]"
+        cqCode = f"[CQ:image,file=file:{os.getcwd()}/images{err_list[i]}]"
         msg += f"{cqCode}\n"
-    msg += f"数量:{len(err_list)}/{len(group_menbers)}"
+    msg += f"数量:{len(err_list)}/{len(class_menbers)}"
 
     goapi.sendMsg(user_id,msg)
     return msg
 
+def send_images_info(user_id,user_class):
+    """上报班级图片情况（次数和成绩）"""
+    class_menbers = dbconn.get_class_members(user_class)
+    today_upload_count = 0
+    upload_date = time.strftime("%Y-%m-%d", time.localtime()) 
+    msg = f"{user_class} {upload_date}情况:\n"
+    for i in range(0,len(class_menbers)):
+        if(str(dbconn.check_status(class_menbers[i])) == str(upload_date)):
+            today_upload_count += 1
+            img_info = dbconn.get_latest_img_info(class_menbers[i],upload_date)[0]
+            if(img_info['ocr_err_code'] == 0):
+                msg += f"{dbconn.get_user(class_menbers[i])['user_name']} 次数{img_info['ocr_times']} 分数{img_info['ocr_scores']}\n"
+            else:
+                msg += f"{dbconn.get_user(class_menbers[i])['user_name']} 未识别到\n"
+    
+    msg += f"共计{today_upload_count}张照片"
 
+    goapi.sendMsg(user_id,msg)
+    return msg
 
 
 
@@ -255,3 +282,5 @@ if __name__ == '__main__':
     #goapi.sendMsg('29242764','[CQ:image,file=file:/Users/catop/Desktop/ChangZhengBot/go-cq/res1.png]')
     #print(ocr_err_upload('29242764','信安20-2','2021-02-13'))
     #goapi.sendMsg('29242764','[CQ:image,file=file:/Users/catop/Desktop/ChangZhengBot/images/2021-02-13/信安20-2/信安20-2班-张宏远-20210213.jpg]')
+    #ocr_err_upload('601179193','信安20-2','2021-02-13')
+    #print(send_images_info('29242764','信安20-2'))
