@@ -3,7 +3,7 @@ Descripttion:
 version: 
 Author: Catop
 Date: 2021-02-10 09:10:27
-LastEditTime: 2021-02-14 10:25:14
+LastEditTime: 2021-02-14 23:24:05
 '''
 #coding:utf-8
 import pymysql
@@ -119,9 +119,12 @@ def check_status(user_id):
     sql = f"SELECT upload_date FROM imginfo WHERE user_id={user_id} ORDER BY upload_date DESC LIMIT 1"
     conn.ping(reconnect=True)
     cursor.execute(sql)
-    last_date = cursor.fetchone()['upload_date']
-    conn.commit()
-    
+    try:
+        last_date = cursor.fetchone()['upload_date']
+        conn.commit()
+    except TypeError:
+        last_date = '1970-01-01'
+        
     return last_date
 
 def get_class_members(user_class):

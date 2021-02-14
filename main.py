@@ -3,7 +3,7 @@ Descripttion:
 version: 
 Author: Catop
 Date: 2021-02-10 07:47:09
-LastEditTime: 2021-02-14 10:57:26
+LastEditTime: 2021-02-14 23:19:04
 '''
 #coding:utf-8
 
@@ -61,7 +61,7 @@ def readMsg(user_id,message):
         '2766104656':'515192555',
         '20475417':'515192555'
         
-        }  #管理用户列表
+        }  #管理用户列表，只用于群提醒时找对应班级群号
     
     if('image' in message):
         if(dbconn.check_register(user_id)):
