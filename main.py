@@ -3,7 +3,7 @@ Descripttion:
 version: 
 Author: Catop
 Date: 2021-02-10 07:47:09
-LastEditTime: 2021-02-14 23:19:04
+LastEditTime: 2021-02-15 19:06:34
 '''
 #coding:utf-8
 
@@ -18,6 +18,7 @@ import compress
 import urllib.parse
 import random
 import ocrplus
+import inputFilter
 
 
 
@@ -46,7 +47,10 @@ def getEvent():
             goapi.add_request(flag)
             time.sleep(random.randint(5,10))
             goapi.sendMsg(user_id,"欢迎！\n请先注册，例如'注册@张三@信安20-2'\n 班级请严格按格式输入，否则可能统计不上哦")
-
+    else:
+        #暂不处理其他类型上报，为防止go-cq报错而设置
+        pass
+    
 
     return data
 
@@ -69,12 +73,20 @@ def readMsg(user_id,message):
             get_img(user_id,message)
         else:
             #用户未注册
-            goapi.sendMsg(user_id,'您还没注册呢，请输入例如"注册@张三@信安20-2"\n 班级请严格按格式输入，否则可能统计不上哦')
+            goapi.sendMsg(user_id,'您还没注册呢，请输入例如"注册@张三@计科20-2"\n 班级请严格按格式输入，否则可能统计不上哦')
         return 
     if('注册' in message):
         try:
             user_name = message.split('@')[1]
             user_class = message.split('@')[2]
+            #简单过滤用户输入
+            if not(inputFilter.is_Chinese(user_name) and inputFilter.check_length(user_name)):
+                goapi.sendMsg(user_id,'输入好像有点问题呢')
+                return
+            if not(inputFilter.is_valid(user_class) and inputFilter.check_length(user_class)):
+                goapi.sendMsg(user_id,'输入好像有点问题呢')
+                return
+                
         except:
             goapi.sendMsg(user_id,'输入好像有点问题呢')
         else:
