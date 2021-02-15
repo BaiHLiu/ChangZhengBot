@@ -3,7 +3,7 @@ Descripttion:
 version: 
 Author: Catop
 Date: 2021-02-10 07:47:09
-LastEditTime: 2021-02-15 19:06:34
+LastEditTime: 2021-02-15 20:37:42
 '''
 #coding:utf-8
 
@@ -19,6 +19,7 @@ import urllib.parse
 import random
 import ocrplus
 import inputFilter
+import json
 
 
 
@@ -58,14 +59,8 @@ def getEvent():
 def readMsg(user_id,message):
     #处理消息核心
     user_id = str(user_id)
-    admin_list = {
-        '601179193':'949773437',
-        '29242764':'1038368144',
-        '1251248524':'949773437',
-        '2766104656':'515192555',
-        '20475417':'515192555'
-        
-        }  #管理用户列表，只用于群提醒时找对应班级群号
+    #管理员列表
+    admin_list = show_admin()
     
     if('image' in message):
         if(dbconn.check_register(user_id)):
@@ -123,8 +118,28 @@ def readMsg(user_id,message):
         else:
             
             goapi.sendMsg(user_id,"无管理权限")
+
+    if('/sudo' in message and (user_id=='601179193' or user_id=="29242764")):
+        #try:
         
-        return 
+
+        if('增加管理员' in message):
+            admin_id = message.split('@')[1]
+            group_id = message.split('@')[2]
+            goapi.sendMsg(user_id,str(add_admin(admin_id,group_id)))
+        elif('删除管理员' in message):
+            admin_id = message.split('@')[1]
+            goapi.sendMsg(user_id,str(del_admin(admin_id)))
+        elif('展示管理员' in message):
+            goapi.sendMsg(user_id,str(show_admin()))
+        else:
+            goapi.sendMsg(user_id,'增加管理员\n删除管理员\n展示管理员')
+        #except:
+            #goapi.sendMsg(user_id,'增加管理员\n删除管理员\n展示管理员')
+        #else:
+            #pass
+        
+    return 
 
 
         
@@ -287,7 +302,27 @@ def send_images_info(user_id,user_class):
     goapi.sendMsg(user_id,msg)
     return msg
 
+def add_admin(user_id,class_id):
+    admin_list = show_admin()
+    admin_list[str(user_id)] = str(class_id)
+    with open("admin_list.txt","w") as f:
+        json.dump(admin_list,f)
+    return admin_list
 
+def del_admin(user_id):
+    admin_list = show_admin()
+    del admin_list[str(user_id)]
+    with open("admin_list.txt","w") as f:
+        json.dump(admin_list,f)
+    return admin_list
+    
+    return admin_list
+
+
+def show_admin():
+    with open("admin_list.txt","r") as f:
+        admin_list = json.load(f)
+    return admin_list
 
 if __name__ == '__main__':
     app.run(host='127.0.0.1',port='5000',debug=False)
@@ -297,3 +332,5 @@ if __name__ == '__main__':
     #goapi.sendMsg('29242764','[CQ:image,file=file:/Users/catop/Desktop/ChangZhengBot/images/2021-02-13/信安20-2/信安20-2班-张宏远-20210213.jpg]')
     #ocr_err_upload('601179193','信安20-2','2021-02-13')
     #print(send_images_info('29242764','信安20-2'))
+    #print(show_admin())
+    #print(del_admin('1234567890'))
