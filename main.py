@@ -173,7 +173,7 @@ def get_img(user_id,message):
         print(err)
     else:
         print("成功处理图片:"+file_name)
-        goapi.sendMsg(user_id,"成功处理图片，正在识别...\n"+file_name)
+        goapi.sendMsg(user_id,"成功处理图片，正在识别...\n"+f"{user_class}班-{user_name}-{file_date}.jpg")
 
         """图片识别部分"""
         try:
