@@ -3,7 +3,7 @@ Descripttion:
 version: 
 Author: Catop
 Date: 2021-02-10 07:47:09
-LastEditTime: 2021-02-15 20:37:42
+LastEditTime: 2021-02-18 07:40:13
 '''
 #coding:utf-8
 
@@ -199,10 +199,12 @@ def get_img(user_id,message):
 
 
 def download_img(img_url,file_name):
-    res = requests.get(img_url, stream=True)
-    if res.status_code == 200:
-        open('images/'+file_name, 'wb').write(res.content)
-        #print("image"+file_name+"saved successfully.")
+    if(img_url[0:23] == 'http://c2cpicdw.qpic.cn/'):
+        #安全过滤
+        res = requests.get(img_url, stream=True)
+        if res.status_code == 200:
+            open('images/'+file_name, 'wb').write(res.content)
+            #print("image"+file_name+"saved successfully.")
 
 def register_user(user_id,user_name,user_class):
     if(dbconn.register_user(user_id,user_name,user_class) == 1):
