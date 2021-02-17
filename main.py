@@ -155,7 +155,12 @@ def get_img(user_id,message):
 
         #修改文件名格式(注意只保存文件名和数据库中显示的file_name改变，目录等名称不变)
         file_date = time.strftime("%Y%m%d", time.localtime()) 
-
+        
+        #安全过滤
+        if not(img_url[0:24] == 'http://c2cpicdw.qpic.cn/'):
+            goapi.sendMsg(user_id,'图片url解析错误')
+            return
+        
         #判断文件目录是否存在
         if not(os.path.exists(f"images/{upload_date}")):
             os.mkdir(f"images/{upload_date}")
@@ -177,6 +182,7 @@ def get_img(user_id,message):
 
         """图片识别部分"""
         try:
+            print(file_name)
             ocr_ret = ocrplus.ocr_img("images"+file_name)
             ocr_err_code = ocr_ret['err_code']
             if(ocr_err_code == 0):
@@ -184,13 +190,15 @@ def get_img(user_id,message):
                 ocr_times = ocr_ret['个人参赛次数']
                 ocr_scores = ocr_ret['个人积分']
             else:
+                print("图片无法识别:"+ocr_ret)
                 #图片识别接口返回无法识别
-                goapi.sendMsg(user_id,f"识别出错,请不要发送原图~问题不大，团支书将人工复核")
+                goapi.sendMsg(user_id,f"OCR无法识别，团支书将人工复核~")
                 dbconn.insert_img(user_id,file_name,upload_date,upload_time,'1','0','0')
                 return 
         except:
             #图片识别接口出错
-            goapi.sendMsg(user_id,f"识别出错,请不要发送原图~问题不大，团支书将人工复核")
+            print("OCR接口出错:")
+            goapi.sendMsg(user_id,f"qwq图片识别接口出错了！")
             dbconn.insert_img(user_id,file_name,upload_date,upload_time,'1','0','0')
         else:
             dbconn.insert_img(user_id,file_name,upload_date,upload_time,ocr_err_code,ocr_times,ocr_scores)
@@ -199,12 +207,10 @@ def get_img(user_id,message):
 
 
 def download_img(img_url,file_name):
-    if(img_url[0:23] == 'http://c2cpicdw.qpic.cn/'):
-        #安全过滤
-        res = requests.get(img_url, stream=True)
-        if res.status_code == 200:
-            open('images/'+file_name, 'wb').write(res.content)
-            #print("image"+file_name+"saved successfully.")
+    res = requests.get(img_url, stream=True)
+    if res.status_code == 200:
+        open('images/'+file_name, 'wb').write(res.content)
+        #print("image"+file_name+"saved successfully.")
 
 def register_user(user_id,user_name,user_class):
     if(dbconn.register_user(user_id,user_name,user_class) == 1):

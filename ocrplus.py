@@ -115,4 +115,4 @@ def ocr_img(imgname,debug=0):
         return res
 
 if __name__ == '__main__':
-    print(ocr_img('images/2021-02-13/信安20-2/信安20-2班-薛丰-20210213.jpg'))
+    print(ocr_img('images/2021-02-18/信安20-2/信安20-2班-刘佰航-20210218.jpg'))
