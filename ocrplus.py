@@ -101,11 +101,30 @@ def ocr_img(imgname,debug=0):
             print(zh)
             print("tesseract扫描res2.png结果:")
             print(zh1)
-        res={}
-        res['err_code']=1
-        res['个人参赛次数']="error"
-        res['个人积分']="error"
-        return res
+        if(listt2==[] and str(zh).replace(" ","")!="" and listt3!=[]):
+            num=int(zh)
+            strr3=str(listt3[0]).replace("'words':","").replace("{","").replace("}","").replace(" ","").replace("'","")
+            score=int(strr3)
+            res={}
+            res['err_code']=0
+            res['个人参赛次数']=num
+            res['个人积分']=score
+            return res
+        elif(listt2!=[] and str(zh1).replace(" ","")=="" and listt3==[]):
+            strr2=str(listt2[0]).replace("'words':","").replace("{","").replace("}","").replace(" ","").replace("'","")
+            num=int(strr2)
+            score=int(zh1)
+            res={}
+            res['err_code']=0
+            res['个人参赛次数']=num
+            res['个人积分']=score
+            return res
+        else:
+            res={}
+            res['err_code']=1
+            res['个人参赛次数']="error"
+            res['个人积分']="error"
+            return res
     except ValueError:
         res={}
         res['err_code']=1
@@ -113,6 +132,3 @@ def ocr_img(imgname,debug=0):
         res['个人积分']="error"
         res['reason']="可能是字体原因"
         return res
-
-if __name__ == '__main__':
-    print(ocr_img('images/2021-02-13/信安20-2/信安20-2班-薛丰-20210213.jpg'))
