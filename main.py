@@ -359,14 +359,14 @@ def send_images_info(user_id,user_class):
 def add_admin(user_id,class_id):
     admin_list = show_admin()
     admin_list[str(user_id)] = str(class_id)
-    with open("/home/lmsha1/ChangZhengBot/admin_list.txt","w") as f:
+    with open("admin_list.txt","w") as f:
         json.dump(admin_list,f)
     return admin_list
 
 def del_admin(user_id):
     admin_list = show_admin()
     del admin_list[str(user_id)]
-    with open("/home/lmsha1/ChangZhengBot/admin_list.txt","w") as f:
+    with open("admin_list.txt","w") as f:
         json.dump(admin_list,f)
     return admin_list
     
@@ -374,7 +374,7 @@ def del_admin(user_id):
 
 
 def show_admin():
-    with open("/home/lmsha1/ChangZhengBot/admin_list.txt","r") as f:
+    with open("admin_list.txt","r") as f:
         admin_list = json.load(f)
     return admin_list
 
