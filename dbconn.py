@@ -9,7 +9,7 @@ LastEditTime: 2021-02-14 23:24:05
 import pymysql
 
 '''连接数据库配置'''
-conn = pymysql.connect(host='192.168.123.180',user = "qqbot",passwd = "HX5sweAyk3KJdStN",db = "qqbot")
+conn = pymysql.connect(host='',user = "qqbot",passwd = "",db = "qqbot")
 
 
 def check_cmd(user_id):
@@ -153,9 +153,63 @@ def get_latest_img_info(user_id,upload_date):
     conn.commit()
 
     return sql_ret
+    
+def manual_update(ocr_times,ocr_socres,imgid):
+    #更新手动核对信息
+    try:
+        params = [ocr_times,ocr_socres,imgid]
+        cursor = conn.cursor(cursor=pymysql.cursors.DictCursor)
+        sql = f"UPDATE imginfo SET ocr_err_code=-1,ocr_times=%s,ocr_scores=%s WHERE imgid=%s"
+        conn.ping(reconnect=True)
+        cursor.execute(sql,params)
+        conn.commit()
+    except:
+        flag=0
+    else:
+        flag=1
+    
+    return flag
 
+def err_check(imgid):
+    cursor = conn.cursor(cursor=pymysql.cursors.DictCursor)
+    sql = f"SELECT ocr_err_code FROM imginfo WHERE imgid={imgid} ORDER BY upload_date DESC LIMIT 1"
+    conn.ping(reconnect=True)
+    cursor.execute(sql)
+    try:
+        ocr_err_code = cursor.fetchone()['ocr_err_code']
+        conn.commit()
+    except:
+        flag = 0    
+    else:
+        flag = 1
+    
+    return ocr_err_code
 
+def get_user_by_migid(imgid):
+    cursor = conn.cursor(cursor=pymysql.cursors.DictCursor)
+    sql = f"SELECT user_id FROM imginfo WHERE imgid={imgid} ORDER BY upload_date DESC LIMIT 1"
+    conn.ping(reconnect=True)
+    cursor.execute(sql)
+    try:
+        user_id = cursor.fetchone()['user_id']
+        conn.commit()
+    except:
+        flag = 0    
+    else:
+        flag = 1
+    cursor1 = conn.cursor(cursor=pymysql.cursors.DictCursor)
+    sql1 = f"SELECT user_name FROM userinfo WHERE user_id={user_id} ORDER BY uid DESC LIMIT 1"
+    conn.ping(reconnect=True)
+    cursor1.execute(sql1)
+    try:
+        user_name = cursor1.fetchone()['user_name']
+        conn.commit()
+    except:
+        flag = 0    
+    else:
+        flag = 1
 
+    return user_name
 
 
 
