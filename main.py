@@ -110,7 +110,7 @@ def readMsg(user_id,message):
             elif('打包'in message):
                 cmp_ret = compress.zip_file(upload_date,dbconn.get_user(user_id)['user_class'])
                 goapi.sendMsg(user_id,f"---打包完毕---\n共处理:{cmp_ret['file_num']}张照片")
-                goapi.sendMsg(user_id,'下载地址:http://down.lmsha1.top:9012/ChangZhengbotDown/'+urllib.parse.quote(cmp_ret['file_name']))
+                goapi.sendMsg(user_id,'下载地址:'+urllib.parse.quote(cmp_ret['file_name']))
             elif('成员'in message):
                 list_class_menbers(user_id,user_class)
             elif('核对'in message):
