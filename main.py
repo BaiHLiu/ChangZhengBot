@@ -47,7 +47,7 @@ def getEvent():
             time.sleep(random.randint(5,10))
             goapi.add_request(flag)
             time.sleep(random.randint(5,10))
-            goapi.sendMsg(user_id,"欢迎！\n请先注册，例如'注册@张三@信安20-2'\n 班级请严格按格式输入，否则可能统计不上哦")
+            goapi.sendMsg(user_id,"欢迎！\n请先注册，例如'注册@小明@智科20-2'\n 班级请严格按格式输入，否则可能统计不上哦,另外特别注意'-'是减号不是破折号，也不要加空格")
     else:
         #暂不处理其他类型上报，为防止go-cq报错而设置
         pass
@@ -68,7 +68,7 @@ def readMsg(user_id,message):
             get_img(user_id,message)
         else:
             #用户未注册
-            goapi.sendMsg(user_id,'您还没注册呢，请输入例如"注册@张三@计科20-2"\n 班级请严格按格式输入，否则可能统计不上哦')
+            goapi.sendMsg(user_id,'您还没注册呢，请输入例如"注册@小明@智科20-2"\n 班级请严格按格式输入，否则可能统计不上哦,另外特别注意'-'是减号不是破折号，也不要加空格')
         return 
     if('注册' in message):
         try:
@@ -110,16 +110,31 @@ def readMsg(user_id,message):
             elif('打包'in message):
                 cmp_ret = compress.zip_file(upload_date,dbconn.get_user(user_id)['user_class'])
                 goapi.sendMsg(user_id,f"---打包完毕---\n共处理:{cmp_ret['file_num']}张照片")
-                goapi.sendMsg(user_id,'下载地址:http://static.catop.top:8001/'+urllib.parse.quote(cmp_ret['file_name']))
+                goapi.sendMsg(user_id,'下载地址:'+urllib.parse.quote(cmp_ret['file_name']))
             elif('成员'in message):
                 list_class_menbers(user_id,user_class)
+            elif('核对'in message):
+                goapi.sendMsg(user_id,'get')
+                err_imgid = message.split('@')[1]
+                ocr_times = message.split('@')[2]
+                ocr_scores = message.split('@')[3]
+                if(dbconn.err_check):
+                    err_code = dbconn.err_check(err_imgid)
+                    if(err_code):
+                        dbconn.manual_update(ocr_times,ocr_scores,err_imgid)
+                        goapi.sendMsg(user_id,f"人工校对完成:{dbconn.get_user_by_migid(err_imgid)}\n参赛次数:{ocr_times}\n积分:{ocr_scores}")
+                elif(err_code == 0):
+                    goapi.sendMsg(user_id,'该图片无需校对，请重新检查输入的id')
+                elif(err_code == -1):goapi.sendMsg(user_id,f"已经人工校对过了，覆盖校对:\n{dbconn.get_user_by_migid(imgid)}\n参赛次数:{ocr_times}\n积分:{ocr_scores}")
+                
+                
             else:
                 goapi.sendMsg(user_id,"目前支持以下管理指令呢：\n群提醒\n提醒\n打包\n成员\n")
         else:
             
             goapi.sendMsg(user_id,"无管理权限")
 
-    if('/sudo' in message and (user_id=='601179193' or user_id=="29242764")):
+    if('/sudo' in message and (user_id=='601179193' or user_id=="29242764" or user_id=="1476821890" or user_id=="3439911708")):
         #try:
         
 
@@ -198,7 +213,7 @@ def get_img(user_id,message):
         except:
             #图片识别接口出错
             print("OCR接口出错:")
-            goapi.sendMsg(user_id,f"qwq图片识别接口出错了！")
+            goapi.sendMsg(user_id,f"qwq图片识别出错了！可能是字体原因，请尝试更换字体后重试")
             dbconn.insert_img(user_id,file_name,upload_date,upload_time,'1','0','0')
         else:
             dbconn.insert_img(user_id,file_name,upload_date,upload_time,ocr_err_code,ocr_times,ocr_scores)
@@ -272,6 +287,7 @@ def ocr_err_upload(user_id,user_class,upload_date):
     """为管理员上报ocr错误的图片"""
     msg = "OCR无法识别以下图片:\n"
     err_list = []
+    err_imgid = []
     class_menbers = dbconn.get_class_members(user_class)
     for i in range(0,len(class_menbers)):
         img_date = dbconn.check_status(class_menbers[i])
@@ -281,14 +297,44 @@ def ocr_err_upload(user_id,user_class,upload_date):
             if(img_info['ocr_err_code'] == 1):
                 print(img_info)
                 err_list.append(img_info['file_name'])
+                err_imgid.append(img_info['imgid'])
 
     for i in range(0,len(err_list)):
         cqCode = f"[CQ:image,file=file:{os.getcwd()}/images{err_list[i]}]"
+        msg += f"id:{err_imgid[i]}\n"
         msg += f"{cqCode}\n"
-    msg += f"数量:{len(err_list)}/{len(class_menbers)}"
-
+    msg += f"数量:{len(err_list)}/{len(class_menbers)}\n"
+    msg += "可人工核对，操作格式: /admin 核对@id@次数@分数，例如：\n核对id为233，次数66，分数99则输入：/admin 核对@233@66@99"
     goapi.sendMsg(user_id,msg)
     return msg
+
+######################################################################
+# def manual_identify(user_id,user_class,upload_date):
+#     """管理员手动识别ocr错误的图片"""
+#     msg="OCR无法识别以下图片"
+#     goapi.sendMsg(user_id,msg)
+#     err_list = []
+#     user_info = []
+#     class_menbers = dbconn.get_class_members(user_class)
+#     for i in range(0,len(class_menbers)):
+#         img_date = dbconn.check_status(class_menbers[i])
+#         if(str(img_date) == str(upload_date)):
+#             img_info = dbconn.get_latest_img_info(class_menbers[i],upload_date)[0]
+#             #print(img_info)
+#             if(img_info['ocr_err_code'] == 1):
+#                 print(img_info)
+#                 err_list.append(img_info['file_name'])
+#     i = 0
+#     while i < len(err_list):
+#         cqCode = f"[CQ:image,file=file:{os.getcwd()}/images{err_list[i]}]"
+#         msg = f"{cqCode}\n"
+#         msg += f"请人工核对，格式：核对@答题次数@答题分数，例如:核对@43@505"
+#         goapi.sendMsg(user_id,msg)
+#         if ("核对" in message )
+#             ocr_times = message.split('@')[1]
+#             ocr_scores = message.split('@')[2]
+            
+######################################################################   
 
 def send_images_info(user_id,user_class):
     """上报班级图片情况（次数和成绩）"""
